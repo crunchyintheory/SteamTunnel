@@ -198,20 +198,17 @@ namespace SteamTunnel.GUI
             updateProgressBar("Copying Files...");
             Game game = listView1.games[listView1.SelectedIndices[0]];
             await Task.Run(() => game.moveGame(sourceDir, destDir));
-            //refresh1_Click();
-            //refresh2_Click();
+            refresh1_Click();
+            refresh2_Click();
             updateProgressBar("Done");
         }
 
-        private void moveBackButton_Click(object sender, EventArgs e)
+        private async void moveBackButton_Click(object sender, EventArgs e)
         {
             progressBar1.Value = 0;
             progressBar1.Maximum = 4;
             Game game = listView2.games[listView2.SelectedIndices[0]];
-            Tunnel.CopyAll(new DirectoryInfo(destDir + "\\common\\" + game.installDir), new DirectoryInfo(sourceDir + "\\common\\" + game.installDir));
-            Directory.Delete(destDir + "\\common\\" + game.installDir, true);
-            File.Copy(game.manifestPath, sourceDir + "\\" + Path.GetFileName(game.manifestPath));
-            File.Delete(game.manifestPath);
+            await Task.Run(() => game.moveGame(destDir, sourceDir));
             updateProgressBar("Searching Directory...");
             refresh2_Click();
             refresh1_Click();
@@ -234,7 +231,8 @@ namespace SteamTunnel.GUI
                 string file = fileArray[i];
                 Game game = Tunnel.getGameInfo(file);
                 list.games.Add(game);
-                imageList.Images.Add(game.appId, game.icon(dir + "\\common"));
+                Icon icon = await Task.Run(() => game.icon(dir + "\\common"));
+                imageList.Images.Add(game.appId, icon);
                 ListViewItem lvi = new ListViewItem();
                 lvi.ImageIndex = i;
                 lvi.Text = "  " + game.name;
