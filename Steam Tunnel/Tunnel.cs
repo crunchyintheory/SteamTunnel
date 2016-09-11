@@ -116,7 +116,7 @@ namespace SteamTunnel
         public string workshopManifestPath;
         public string[] workhsopDirs;
 
-        public Icon icon(string commonPath)
+        public async Task<Icon> icon(string commonPath)
         {
             string[] fileArray = Directory.GetFiles(commonPath + "\\" + installDir, "*.exe", SearchOption.AllDirectories);
             foreach(string file in fileArray)

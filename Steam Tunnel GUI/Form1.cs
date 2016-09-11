@@ -234,7 +234,8 @@ namespace SteamTunnel.GUI
                 string file = fileArray[i];
                 Game game = Tunnel.getGameInfo(file);
                 list.games.Add(game);
-                imageList.Images.Add(game.appId, game.icon(dir + "\\common"));
+                Icon icon = await Task.Run(() => game.icon(dir + "\\common"));
+                imageList.Images.Add(game.appId, icon);
                 ListViewItem lvi = new ListViewItem();
                 lvi.ImageIndex = i;
                 lvi.Text = "  " + game.name;
