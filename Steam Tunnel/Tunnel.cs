@@ -66,6 +66,8 @@ namespace SteamTunnel
                     if(items[i].StartsWith("\"appid\""))
                     {
                         game.appId = items[i + 2].Replace("\"", "");
+                        game.workshopRelativePath = "\\workshop\\content\\" + game.appId;
+                        game.workshopManifestRelativePath = "\\workshop\\appworkshop_" + game.appId + ".acf";
                     }
                     else if(items[i].StartsWith("\"name\""))
                     {
@@ -113,8 +115,8 @@ namespace SteamTunnel
         public string name;
         public string installDir;
         public string manifestPath;
-        public string workshopManifestPath;
-        public string[] workhsopDirs;
+        public string workshopRelativePath;
+        public string workshopManifestRelativePath;
 
         public async Task<Icon> icon(string commonPath)
         {
@@ -127,6 +129,28 @@ namespace SteamTunnel
             return Icon.ExtractAssociatedIcon(fileArray[0]);
         }
 
+        public async Task<WorkshopFileData> getWorkshopInfo(string dir)
+        {
+            WorkshopFileData fileData = new WorkshopFileData();
+            fileData.isManifestPresent = File.Exists(dir + workshopManifestRelativePath);
+            fileData.isDirectoryPresent = Directory.Exists(dir + workshopRelativePath);
+            return fileData;
+        }
+
+        public async Task moveWorkshopContent(string sourceDir, string destDir, WorkshopFileData fileData)
+        {
+            if (fileData.isDirectoryPresent)
+            {
+                Tunnel.CopyAll(new DirectoryInfo(sourceDir + workshopRelativePath), new DirectoryInfo(destDir + workshopRelativePath));
+                Directory.Delete(sourceDir + workshopRelativePath, true);
+            }
+            if (fileData.isManifestPresent)
+            {
+                File.Copy(sourceDir + workshopManifestRelativePath, destDir + workshopManifestRelativePath);
+                File.Delete(sourceDir + workshopManifestRelativePath);
+            }
+        }
+
         public async Task moveGame(string sourceDir, string destDir)
         {
             Tunnel.CopyAll(new DirectoryInfo(sourceDir + "\\common\\" + installDir), new DirectoryInfo(destDir + "\\common\\" + installDir));
@@ -134,5 +158,9 @@ namespace SteamTunnel
             File.Copy(manifestPath, destDir + "\\" + Path.GetFileName(manifestPath));
             File.Delete(manifestPath);
         }
+    }
+    public struct WorkshopFileData
+    {
+        public bool isManifestPresent, isDirectoryPresent;
     }
 }

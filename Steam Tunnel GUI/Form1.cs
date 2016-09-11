@@ -111,7 +111,8 @@ namespace SteamTunnel.GUI
         private async void refresh1_Click(object sender = null, EventArgs e = null)
         {
             progressBar1.Value = 0;
-            progressBar1.Maximum = 2;
+            progressBar1.Maximum = 200;
+            progressBar1.Step = 100;
             updateProgressBar("Searching Directory...");
             await Task.Delay(600);
             try
@@ -151,7 +152,8 @@ namespace SteamTunnel.GUI
         private async void refresh2_Click(object sender = null, EventArgs e = null)
         {
             progressBar1.Value = 0;
-            progressBar1.Maximum = 2;
+            progressBar1.Maximum = 200;
+            progressBar1.Step = 100;
             updateProgressBar("Searching Directory...");
             await Task.Delay(600);
             try
@@ -194,10 +196,13 @@ namespace SteamTunnel.GUI
         private async void moveToDestButton_Click(object sender, EventArgs e)
         {
             progressBar1.Value = 0;
-            progressBar1.Maximum = 4;
+            progressBar1.Maximum = 400;
+            progressBar1.Step = 100;
             updateProgressBar("Copying Files...");
             Game game = listView1.games[listView1.SelectedIndices[0]];
             await Task.Run(() => game.moveGame(sourceDir, destDir));
+            updateProgressBar();
+            await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(sourceDir)));
             refresh1_Click();
             refresh2_Click();
             updateProgressBar("Done");
@@ -206,10 +211,13 @@ namespace SteamTunnel.GUI
         private async void moveBackButton_Click(object sender, EventArgs e)
         {
             progressBar1.Value = 0;
-            progressBar1.Maximum = 4;
+            progressBar1.Maximum = 400;
+            progressBar1.Step = 100;
+            updateProgressBar("Copying Files...");
             Game game = listView2.games[listView2.SelectedIndices[0]];
             await Task.Run(() => game.moveGame(destDir, sourceDir));
-            updateProgressBar("Searching Directory...");
+            updateProgressBar();
+            await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(destDir)));
             refresh2_Click();
             refresh1_Click();
             updateProgressBar("Done");
