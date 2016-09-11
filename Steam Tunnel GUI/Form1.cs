@@ -217,9 +217,7 @@ namespace SteamTunnel.GUI
             Game game = listView2.games[listView2.SelectedIndices[0]];
             await Task.Run(() => game.moveGame(destDir, sourceDir));
             updateProgressBar();
-            //WorkshopFileData fileData = await Task.Run()
             await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(destDir)));
-            updateProgressBar("Searching Directory...");
             refresh2_Click();
             refresh1_Click();
             updateProgressBar("Done");
