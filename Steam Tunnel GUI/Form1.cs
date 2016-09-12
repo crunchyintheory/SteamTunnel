@@ -12,6 +12,8 @@ using Trileans;
 
 namespace SteamTunnel.GUI
 {
+    delegate void updateProgressBarCallback(string caption, bool step);
+    delegate void resetProgressBarCallback(int Value, int Maximum, int Step, string caption);
     public partial class Form1 : Form
     {
         string sourceDir;
@@ -56,6 +58,11 @@ namespace SteamTunnel.GUI
                 lvi.Text = "  Alien: Isoloation                                                             ";
                 listView1.Items.Add(lvi);
             }*/
+
+            Tunnel.FileCopyProgress += (filesCopied, totalFiles) =>
+            {
+                resetProgressBar(filesCopied, (int)totalFiles, 1, "Copying Files...  " + filesCopied.ToString() + "/" + totalFiles.ToString());
+            };
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -195,42 +202,65 @@ namespace SteamTunnel.GUI
 
         private async void moveToDestButton_Click(object sender, EventArgs e)
         {
-            progressBar1.Value = 0;
-            progressBar1.Maximum = 400;
-            progressBar1.Step = 100;
-            updateProgressBar("Copying Files...");
-            Game game = listView1.games[listView1.SelectedIndices[0]];
-            await Task.Run(() => game.moveGame(sourceDir, destDir));
-            updateProgressBar();
-            await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(sourceDir)));
+            List<Game> games = listView1.games.Where(x => x.installDir == listView1.games[listView1.SelectedIndices[0]].installDir).ToList();
+            foreach (Game game in games) {
+                resetProgressBar(0, 100, 1, "Copying Files...");
+                await Task.Run(() => game.moveGame(sourceDir, destDir));
+                resetProgressBar(0, 100, 1, "Copying Files...");
+                await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(sourceDir)));
+            }
             refresh1_Click();
             refresh2_Click();
-            updateProgressBar("Done");
+            updateProgressBar("Done", false);
         }
 
         private async void moveBackButton_Click(object sender, EventArgs e)
         {
-            progressBar1.Value = 0;
-            progressBar1.Maximum = 400;
-            progressBar1.Step = 100;
-            updateProgressBar("Copying Files...");
-            Game game = listView2.games[listView2.SelectedIndices[0]];
-            await Task.Run(() => game.moveGame(destDir, sourceDir));
-            updateProgressBar();
-            await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(destDir)));
+            List<Game> games = listView2.games.Where(x => x.installDir == listView2.games[listView2.SelectedIndices[0]].installDir).ToList();
+            foreach (Game game in games) {
+                resetProgressBar(0, 100, 1, "Copying Files...");
+                await Task.Run(() => game.moveGame(destDir, sourceDir));
+                resetProgressBar(0, 100, 1, "Copying Files...");
+                await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(destDir)));
+            }
             refresh2_Click();
             refresh1_Click();
-            updateProgressBar("Done");
+            updateProgressBar("Done", false);
         }
-        public void updateProgressBar(string caption = null)
+        public void updateProgressBar(string caption = null, bool step = true)
         {
-            if(caption != null)
+            if (!label3.InvokeRequired && !progressBar1.InvokeRequired)
+            {
+                if (caption != null)
+                {
+                    label3.Text = caption;
+                }
+                if (step)
+                {
+                    progressBar1.PerformStep();
+                }
+            }
+            else
+            {
+                updateProgressBarCallback d = new updateProgressBarCallback(updateProgressBar);
+                Invoke(d, new object[] { caption, step });
+            }
+        }
+        public void resetProgressBar(int Value, int Maximum, int Step, string caption = "Done")
+        {
+            if (!label3.InvokeRequired && !progressBar1.InvokeRequired)
             {
                 label3.Text = caption;
+                progressBar1.Value = Value;
+                progressBar1.Maximum = Maximum;
+                progressBar1.Step = Step;
             }
-            progressBar1.PerformStep();
+            else
+            {
+                resetProgressBarCallback d = new resetProgressBarCallback(resetProgressBar);
+                Invoke(d, new object[] { Value, Maximum, Step, caption });
+            }
         }
-
         public async Task updateList(GameListView list, ImageList imageList, string dir)
         {
             string[] fileArray = Directory.GetFiles(dir).Where(x => Regex.IsMatch(Path.GetFileName(x), @"appmanifest_\d+\.acf")).ToArray();
