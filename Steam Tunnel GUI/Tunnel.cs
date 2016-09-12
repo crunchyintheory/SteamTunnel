@@ -5,12 +5,18 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
+using System.Net;
 using Trileans;
 
 namespace SteamTunnel
 {
     public class Tunnel
     {
+        public delegate void IntLongDelegate(int Int1, long Long);
+        public static event IntLongDelegate FileCopyProgress;
+        public static int filesCopied;
+        public static long totalFiles;
+
         public static trilean validateSteamDirectory(string path)
         {
             if (Path.GetFileName(path) == "Steam" &&
@@ -61,19 +67,19 @@ namespace SteamTunnel
             while ((line = stream.ReadLine()) != null)
             {
                 string[] items = line.Split('\t');
-                for(int i = 0; i < items.Length; i++)
+                for (int i = 0; i < items.Length; i++)
                 {
-                    if(items[i].StartsWith("\"appid\""))
+                    if (items[i].StartsWith("\"appid\""))
                     {
                         game.appId = items[i + 2].Replace("\"", "");
                         game.workshopRelativePath = "\\workshop\\content\\" + game.appId;
                         game.workshopManifestRelativePath = "\\workshop\\appworkshop_" + game.appId + ".acf";
                     }
-                    else if(items[i].StartsWith("\"name\""))
+                    else if (items[i].StartsWith("\"name\""))
                     {
                         game.name = items[i + 2].Replace("\"", "");
                     }
-                    else if(items[i].StartsWith("\"installdir\""))
+                    else if (items[i].StartsWith("\"installdir\""))
                     {
                         game.installDir = items[i + 2].Replace("\"", "");
                     }
@@ -94,6 +100,7 @@ namespace SteamTunnel
             foreach (FileInfo fi in source.GetFiles())
             {
                 fi.CopyTo(Path.Combine(target.ToString(), fi.Name), true);
+                CopyProgress(++filesCopied, totalFiles);
             }
 
             // Copy each subdirectory using recursion.
@@ -103,6 +110,12 @@ namespace SteamTunnel
                     target.CreateSubdirectory(diSourceSubDir.Name);
                 CopyAll(diSourceSubDir, nextTargetSubDir);
             }
+        }
+        internal static void CopyProgress(int filesCopied, long totalFiles)
+        {
+            Tunnel.filesCopied = filesCopied;
+            Tunnel.totalFiles = totalFiles;
+            FileCopyProgress?.Invoke(filesCopied, totalFiles);
         }
     }
     public class AppStates
@@ -121,7 +134,7 @@ namespace SteamTunnel
         public async Task<Icon> icon(string commonPath)
         {
             string[] fileArray = Directory.GetFiles(commonPath + "\\" + installDir, "*.exe", SearchOption.AllDirectories);
-            foreach(string file in fileArray)
+            foreach (string file in fileArray)
             {
                 Icon icon = Icon.ExtractAssociatedIcon(file);
                 if (!Regex.IsMatch(file, ".+(?:redist|setup|core|extensions|loader|api|physx|install|awesomium|reporter|runme|launcher|dosbox|asset|server|config|update|dotnet).+", RegexOptions.IgnoreCase)) { return icon; }
@@ -141,6 +154,7 @@ namespace SteamTunnel
         {
             if (fileData.isDirectoryPresent)
             {
+                Tunnel.CopyProgress(0, Directory.GetFiles(sourceDir + workshopRelativePath, "*", SearchOption.AllDirectories).LongLength);
                 Tunnel.CopyAll(new DirectoryInfo(sourceDir + workshopRelativePath), new DirectoryInfo(destDir + workshopRelativePath));
                 Directory.Delete(sourceDir + workshopRelativePath, true);
             }
@@ -153,8 +167,12 @@ namespace SteamTunnel
 
         public async Task moveGame(string sourceDir, string destDir)
         {
-            Tunnel.CopyAll(new DirectoryInfo(sourceDir + "\\common\\" + installDir), new DirectoryInfo(destDir + "\\common\\" + installDir));
-            Directory.Delete(sourceDir + "\\common\\" + installDir, true);
+            if (Directory.Exists(sourceDir + "\\common\\" + installDir))
+            {
+                Tunnel.CopyProgress(0, Directory.GetFiles(sourceDir + "\\common\\" + installDir, "*", SearchOption.AllDirectories).LongLength);
+                Tunnel.CopyAll(new DirectoryInfo(sourceDir + "\\common\\" + installDir), new DirectoryInfo(destDir + "\\common\\" + installDir));
+                Directory.Delete(sourceDir + "\\common\\" + installDir, true);
+            }
             File.Copy(manifestPath, destDir + "\\" + Path.GetFileName(manifestPath));
             File.Delete(manifestPath);
         }
