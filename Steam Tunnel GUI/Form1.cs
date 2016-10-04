@@ -51,14 +51,6 @@ namespace SteamTunnel.GUI
             listView2.Columns.Add(header2);
             listView2.HeaderStyle = ColumnHeaderStyle.None;
 
-            /*for(int i = 0; i < il.Images.Count; i++)
-            {
-                ListViewItem lvi = new ListViewItem();
-                lvi.ImageIndex = i;
-                lvi.Text = "  Alien: Isoloation                                                             ";
-                listView1.Items.Add(lvi);
-            }*/
-
             Tunnel.FileCopyProgress += (filesCopied, totalFiles) =>
             {
                 resetProgressBar(filesCopied, (int)totalFiles, 1, "Copying Files...  " + filesCopied.ToString() + "/" + totalFiles.ToString());
@@ -158,21 +150,21 @@ namespace SteamTunnel.GUI
                 }
                 else
                 {
-                    string message = "The path could not be resolved";
+                    string message = "The path is not a valid Steam directory";
                     string caption = "Error: Invalid Path";
                     MessageBoxButtons buttons = MessageBoxButtons.OK;
                     MessageBoxIcon icon = MessageBoxIcon.Error;
 
                     MessageBox.Show(message, caption, buttons, icon);
                 }
-            } catch (Exception exception)
+            } catch (Exception)
             {
-                string message = "The path is not a valid Steam directory";
+                string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
 
-                MessageBox.Show(exception.ToString(), caption, buttons, icon);
+                MessageBox.Show(message, caption, buttons, icon);
             }
         }
 
@@ -208,7 +200,7 @@ namespace SteamTunnel.GUI
                     MessageBox.Show(message, caption, buttons, icon);
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 progressBar1.Value = 0;
                 string message = "The path could not be resolved";
@@ -216,7 +208,7 @@ namespace SteamTunnel.GUI
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
 
-                MessageBox.Show(exception.ToString(), caption, buttons, icon);
+                MessageBox.Show(message, caption, buttons, icon);
             }
         }
 
