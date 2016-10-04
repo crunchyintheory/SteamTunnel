@@ -51,14 +51,6 @@ namespace SteamTunnel.GUI
             listView2.Columns.Add(header2);
             listView2.HeaderStyle = ColumnHeaderStyle.None;
 
-            /*for(int i = 0; i < il.Images.Count; i++)
-            {
-                ListViewItem lvi = new ListViewItem();
-                lvi.ImageIndex = i;
-                lvi.Text = "  Alien: Isoloation                                                             ";
-                listView1.Items.Add(lvi);
-            }*/
-
             Tunnel.FileCopyProgress += (filesCopied, totalFiles) =>
             {
                 resetProgressBar(filesCopied, (int)totalFiles, 1, "Copying Files...  " + filesCopied.ToString() + "/" + totalFiles.ToString());
@@ -107,12 +99,32 @@ namespace SteamTunnel.GUI
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            moveToDestButton.Enabled = true;
+            switch(listView1.SelectedItems.Count)
+            {
+                case 1:
+                    this.moveToDestButton.Enabled = true;
+                    listView2.SelectedIndices.Clear();
+                    break;
+                default:
+                    this.moveToDestButton.Enabled = false;
+                    break;
+            }
+            moveBackButton.Enabled = false;
         }
 
         private void listView2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            moveBackButton.Enabled = true;
+            switch (listView2.SelectedItems.Count)
+            {
+                case 1:
+                    this.moveBackButton.Enabled = true;
+                    listView1.SelectedIndices.Clear();
+                    break;
+                default:
+                    this.moveBackButton.Enabled = false;
+                    break;
+            }
+            moveToDestButton.Enabled = false;
         }
 
         private async void refresh1_Click(object sender = null, EventArgs e = null)
@@ -138,21 +150,21 @@ namespace SteamTunnel.GUI
                 }
                 else
                 {
-                    string message = "The path could not be resolved";
+                    string message = "The path is not a valid Steam directory";
                     string caption = "Error: Invalid Path";
                     MessageBoxButtons buttons = MessageBoxButtons.OK;
                     MessageBoxIcon icon = MessageBoxIcon.Error;
 
                     MessageBox.Show(message, caption, buttons, icon);
                 }
-            } catch (Exception exception)
+            } catch (Exception)
             {
-                string message = "The path is not a valid Steam directory";
+                string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
 
-                MessageBox.Show(exception.ToString(), caption, buttons, icon);
+                MessageBox.Show(message, caption, buttons, icon);
             }
         }
 
@@ -188,7 +200,7 @@ namespace SteamTunnel.GUI
                     MessageBox.Show(message, caption, buttons, icon);
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 progressBar1.Value = 0;
                 string message = "The path could not be resolved";
@@ -196,13 +208,14 @@ namespace SteamTunnel.GUI
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
 
-                MessageBox.Show(exception.ToString(), caption, buttons, icon);
+                MessageBox.Show(message, caption, buttons, icon);
             }
         }
 
         private async void moveToDestButton_Click(object sender, EventArgs e)
         {
             List<Game> games = listView1.games.Where(x => x.installDir == listView1.games[listView1.SelectedIndices[0]].installDir).ToList();
+            listView1.SelectedIndices.Clear();
             foreach (Game game in games) {
                 resetProgressBar(0, 100, 1, "Copying Files...");
                 await Task.Run(() => game.moveGame(sourceDir, destDir));
@@ -217,6 +230,7 @@ namespace SteamTunnel.GUI
         private async void moveBackButton_Click(object sender, EventArgs e)
         {
             List<Game> games = listView2.games.Where(x => x.installDir == listView2.games[listView2.SelectedIndices[0]].installDir).ToList();
+            listView2.SelectedIndices.Clear();
             foreach (Game game in games) {
                 resetProgressBar(0, 100, 1, "Copying Files...");
                 await Task.Run(() => game.moveGame(destDir, sourceDir));
