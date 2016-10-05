@@ -278,7 +278,12 @@ namespace SteamTunnel.GUI
         public async Task updateList(GameListView list, ImageList imageList, string dir)
         {
             string[] fileArray = Directory.GetFiles(dir).Where(x => Regex.IsMatch(Path.GetFileName(x), @"appmanifest_\d+\.acf")).ToArray();
-            for (int i = 0; i < fileArray.Length; i++)
+            List<Game> gameList = new List<Game>(fileArray.Length);
+            foreach(string file in fileArray)
+            {
+                gameList.Add(Tunnel.getGameInfo(file));
+            }
+            /*for (int i = 0; i < fileArray.Length; i++)
             {
                 string file = fileArray[i];
                 Game game = Tunnel.getGameInfo(file);
@@ -288,6 +293,17 @@ namespace SteamTunnel.GUI
                 ListViewItem lvi = new ListViewItem();
                 lvi.ImageIndex = i;
                 lvi.Text = "  " + game.name;
+                list.Items.Add(lvi);
+            }*/
+            gameList.Sort((x, y) => string.Compare(x.name, y.name));
+            list.games = gameList;
+            for(int i = 0; i < gameList.Count; i++)
+            {
+                Icon icon = await Task.Run(() => gameList[i].icon(dir + "\\common"));
+                imageList.Images.Add(gameList[i].appId, icon);
+                ListViewItem lvi = new ListViewItem();
+                lvi.ImageIndex = i;
+                lvi.Text = "  " + gameList[i].name;
                 list.Items.Add(lvi);
             }
             list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
