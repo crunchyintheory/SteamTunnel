@@ -107,12 +107,32 @@ namespace SteamTunnel.GUI
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            moveToDestButton.Enabled = true;
+            switch(listView1.SelectedItems.Count)
+            {
+                case 1:
+                    this.moveToDestButton.Enabled = true;
+                    listView2.SelectedIndices.Clear();
+                    break;
+                default:
+                    this.moveToDestButton.Enabled = false;
+                    break;
+            }
+            moveBackButton.Enabled = false;
         }
 
         private void listView2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            moveBackButton.Enabled = true;
+            switch (listView2.SelectedItems.Count)
+            {
+                case 1:
+                    this.moveBackButton.Enabled = true;
+                    listView1.SelectedIndices.Clear();
+                    break;
+                default:
+                    this.moveBackButton.Enabled = false;
+                    break;
+            }
+            moveToDestButton.Enabled = false;
         }
 
         private async void refresh1_Click(object sender = null, EventArgs e = null)
@@ -203,6 +223,7 @@ namespace SteamTunnel.GUI
         private async void moveToDestButton_Click(object sender, EventArgs e)
         {
             List<Game> games = listView1.games.Where(x => x.installDir == listView1.games[listView1.SelectedIndices[0]].installDir).ToList();
+            listView1.SelectedIndices.Clear();
             foreach (Game game in games) {
                 resetProgressBar(0, 100, 1, "Copying Files...");
                 await Task.Run(() => game.moveGame(sourceDir, destDir));
@@ -217,6 +238,7 @@ namespace SteamTunnel.GUI
         private async void moveBackButton_Click(object sender, EventArgs e)
         {
             List<Game> games = listView2.games.Where(x => x.installDir == listView2.games[listView2.SelectedIndices[0]].installDir).ToList();
+            listView2.SelectedIndices.Clear();
             foreach (Game game in games) {
                 resetProgressBar(0, 100, 1, "Copying Files...");
                 await Task.Run(() => game.moveGame(destDir, sourceDir));
