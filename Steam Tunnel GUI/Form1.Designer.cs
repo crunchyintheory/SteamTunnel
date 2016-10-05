@@ -47,9 +47,9 @@
             // moveToDestButton
             // 
             this.moveToDestButton.Enabled = false;
-            this.moveToDestButton.Location = new System.Drawing.Point(244, 110);
+            this.moveToDestButton.Location = new System.Drawing.Point(242, 110);
             this.moveToDestButton.Name = "moveToDestButton";
-            this.moveToDestButton.Size = new System.Drawing.Size(32, 23);
+            this.moveToDestButton.Size = new System.Drawing.Size(34, 23);
             this.moveToDestButton.TabIndex = 2;
             this.moveToDestButton.Text = ">>";
             this.moveToDestButton.UseVisualStyleBackColor = true;
@@ -58,9 +58,9 @@
             // moveBackButton
             // 
             this.moveBackButton.Enabled = false;
-            this.moveBackButton.Location = new System.Drawing.Point(244, 139);
+            this.moveBackButton.Location = new System.Drawing.Point(242, 139);
             this.moveBackButton.Name = "moveBackButton";
-            this.moveBackButton.Size = new System.Drawing.Size(32, 23);
+            this.moveBackButton.Size = new System.Drawing.Size(34, 23);
             this.moveBackButton.TabIndex = 4;
             this.moveBackButton.Text = "<<";
             this.moveBackButton.UseVisualStyleBackColor = true;
@@ -70,7 +70,7 @@
             // 
             this.textBox1.Location = new System.Drawing.Point(59, 19);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(148, 20);
+            this.textBox1.Size = new System.Drawing.Size(147, 20);
             this.textBox1.TabIndex = 5;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
@@ -85,7 +85,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(213, 19);
+            this.button1.Location = new System.Drawing.Point(212, 19);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(24, 23);
             this.button1.TabIndex = 7;
@@ -134,7 +134,7 @@
             // 
             this.refresh1.Location = new System.Drawing.Point(12, 46);
             this.refresh1.Name = "refresh1";
-            this.refresh1.Size = new System.Drawing.Size(226, 23);
+            this.refresh1.Size = new System.Drawing.Size(224, 23);
             this.refresh1.TabIndex = 12;
             this.refresh1.Text = "Refresh";
             this.refresh1.UseVisualStyleBackColor = true;
@@ -145,7 +145,7 @@
             this.listView1.Location = new System.Drawing.Point(12, 75);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(226, 238);
+            this.listView1.Size = new System.Drawing.Size(224, 238);
             this.listView1.TabIndex = 13;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.listView1_SelectedIndexChanged);
