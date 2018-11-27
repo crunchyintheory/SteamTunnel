@@ -129,10 +129,8 @@ namespace SteamTunnel.GUI
 
         private async void refresh1_Click(object sender = null, EventArgs e = null)
         {
-            progressBar1.Value = 0;
-            progressBar1.Maximum = 200;
-            progressBar1.Step = 100;
-            updateProgressBar("Searching Directory...");
+            resetProgressBar(0, 200, 100, "Searching Directory...");
+            updateProgressBar(null, true);
             await Task.Delay(600);
             try
             {
@@ -150,6 +148,7 @@ namespace SteamTunnel.GUI
                 }
                 else
                 {
+                    resetProgressBar(0, 0, 0, "Failed.");
                     string message = "The path is not a valid Steam directory";
                     string caption = "Error: Invalid Path";
                     MessageBoxButtons buttons = MessageBoxButtons.OK;
@@ -159,6 +158,7 @@ namespace SteamTunnel.GUI
                 }
             } catch (Exception)
             {
+                resetProgressBar(0, 0, 0, "Failed.");
                 string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
@@ -170,10 +170,8 @@ namespace SteamTunnel.GUI
 
         private async void refresh2_Click(object sender = null, EventArgs e = null)
         {
-            progressBar1.Value = 0;
-            progressBar1.Maximum = 200;
-            progressBar1.Step = 100;
-            updateProgressBar("Searching Directory...");
+            resetProgressBar(0, 200, 100, "Searching Directory...");
+            updateProgressBar(null, true);
             await Task.Delay(600);
             try
             {
@@ -191,7 +189,7 @@ namespace SteamTunnel.GUI
                 }
                 else
                 {
-                    progressBar1.Value = 0;
+                    resetProgressBar(0, 0, 0, "Failed.");
                     string message = "The path is not a valid Steam directory";
                     string caption = "Error: Invalid Path";
                     MessageBoxButtons buttons = MessageBoxButtons.OK;
@@ -202,7 +200,7 @@ namespace SteamTunnel.GUI
             }
             catch (Exception)
             {
-                progressBar1.Value = 0;
+                resetProgressBar(0, 0, 0, "Failed.");
                 string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
@@ -307,7 +305,7 @@ namespace SteamTunnel.GUI
                 list.Items.Add(lvi);
             }
             list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
-            updateProgressBar("Done");
+            updateProgressBar("Done", true);
         }
     }
     public class GameListView : ListView
