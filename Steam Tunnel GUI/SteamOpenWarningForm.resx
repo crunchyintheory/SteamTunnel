@@ -117,4 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label2.Text" xml:space="preserve">
+    <value>You must close all instances of Steam (right click on the tray icon and click "Exit") before using Steam Tunnel.
+
+Using this tool with Steam open can result in your game files becoming detached from Steam, in which case you will have to manually reassign them.</value>
+  </data>
 </root>

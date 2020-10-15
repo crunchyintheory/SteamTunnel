@@ -137,9 +137,11 @@ namespace SteamTunnel
             foreach(string file in fileArray)
             {
                 Icon icon = Icon.ExtractAssociatedIcon(file);
-                if (!Regex.IsMatch(file, ".+(?:redist|setup|core|extensions|loader|api|physx|install|awesomium|reporter|runme|launcher|dosbox|asset|server|config|update|dotnet).+", RegexOptions.IgnoreCase)) { return icon; }
+                if (!Regex.IsMatch(file, ".+(?:redist|setup|core|extensions|loader|api|physx|install|awesomium|reporter|runme|launcher|dosbox|asset|server|config|update|dotnet).+", RegexOptions.IgnoreCase)) {
+                    return icon;
+                }
             }
-            return Icon.ExtractAssociatedIcon(fileArray[0]);
+            return null;
         }
 
         public async Task<WorkshopFileData> getWorkshopInfo(string dir)

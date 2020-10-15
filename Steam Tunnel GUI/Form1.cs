@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Trileans;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SteamTunnel.GUI
 {
@@ -34,20 +35,24 @@ namespace SteamTunnel.GUI
             listView1.View = View.Details;
             listView1.SmallImageList = il1;
             listView1.Scrollable = true;
-            ColumnHeader header1 = new ColumnHeader();
-            header1.Text = "";
-            header1.Name = "col1";
-            header1.Width = listView1.Width - 4 - SystemInformation.VerticalScrollBarWidth;
+            ColumnHeader header1 = new ColumnHeader
+            {
+                Text = "",
+                Name = "col1",
+                Width = listView1.Width - 4 - SystemInformation.VerticalScrollBarWidth
+            };
             listView1.Columns.Add(header1);
             listView1.HeaderStyle = ColumnHeaderStyle.None;
 
             listView2.View = View.Details;
             listView2.SmallImageList = il2;
             listView2.Scrollable = true;
-            ColumnHeader header2 = new ColumnHeader();
-            header2.Text = "";
-            header2.Name = "col2";
-            header2.Width = listView2.Width - 4 - SystemInformation.VerticalScrollBarWidth;
+            ColumnHeader header2 = new ColumnHeader
+            {
+                Text = "",
+                Name = "col2",
+                Width = listView2.Width - 4 - SystemInformation.VerticalScrollBarWidth
+            };
             listView2.Columns.Add(header2);
             listView2.HeaderStyle = ColumnHeaderStyle.None;
 
@@ -55,14 +60,25 @@ namespace SteamTunnel.GUI
             {
                 resetProgressBar(filesCopied, (int)totalFiles, 1, "Copying Files...  " + filesCopied.ToString() + "/" + totalFiles.ToString());
             };
+
+            Text += " v" + Program.Version;
+
+            // ------------------------
+
+            bool steamOpen = System.Diagnostics.Process.GetProcessesByName("steam").Length > 0;
+
+            SteamOpenWarningForm settings = new SteamOpenWarningForm();
+            settings.ShowDialog();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = textBox1.Text;
-            dialog.ShowNewFolderButton = false;
-            dialog.Description = "Select either \"Steam\", \"Steam.exe\", \"SteamApps\", or \"common\"";
+            FolderBrowserDialog dialog = new FolderBrowserDialog
+            {
+                SelectedPath = textBox1.Text,
+                ShowNewFolderButton = false,
+                Description = "Select either \"Steam\", \"Steam.exe\", \"SteamApps\", or \"common\""
+            };
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 textBox1.Text = dialog.SelectedPath;
@@ -71,10 +87,12 @@ namespace SteamTunnel.GUI
 
         private void button2_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.SelectedPath = textBox2.Text;
-            dialog.ShowNewFolderButton = false;
-            dialog.Description = "Select either \"Steam\", \"Steam.exe\", \"SteamApps\", or \"common\"";
+            FolderBrowserDialog dialog = new FolderBrowserDialog
+            {
+                SelectedPath = textBox2.Text,
+                ShowNewFolderButton = false,
+                Description = "Select either \"Steam\", \"Steam.exe\", \"SteamApps\", or \"common\""
+            };
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 textBox2.Text = dialog.SelectedPath;
@@ -156,13 +174,15 @@ namespace SteamTunnel.GUI
 
                     MessageBox.Show(message, caption, buttons, icon);
                 }
-            } catch (Exception)
+            } catch (Exception error)
             {
                 resetProgressBar(0, 0, 0, "Failed.");
                 string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
+
+                Console.WriteLine(error.Message);
 
                 MessageBox.Show(message, caption, buttons, icon);
             }
@@ -295,17 +315,96 @@ namespace SteamTunnel.GUI
             }*/
             gameList.Sort((x, y) => string.Compare(x.name, y.name));
             list.games = gameList;
-            for(int i = 0; i < gameList.Count; i++)
+
+            Dictionary<string, Icon> iconCache = LoadIconsCache();
+            bool iconCacheUpdated = false;
+            Icon icon;
+            _ = Program.Options.TryGetValue("Icons", out string useIcons);
+
+            for (int i = 0; i < gameList.Count; i++)
             {
-                Icon icon = await Task.Run(() => gameList[i].icon(dir + "\\common"));
+                if (useIcons != "0")
+                {
+                    if(!iconCache.TryGetValue(gameList[i].appId, out icon))
+                    {
+                        icon = await Task.Run(() => gameList[i].icon(dir + "\\common"));
+                        if (icon == null)
+                        {
+                            icon = SystemIcons.Application;
+                        }
+                        else
+                        {
+                            iconCache.Add(gameList[i].appId, icon);
+                            iconCacheUpdated = true;
+                        }
+                    }
+                } else
+                {
+                    icon = SystemIcons.Application;
+                }
                 imageList.Images.Add(gameList[i].appId, icon);
-                ListViewItem lvi = new ListViewItem();
-                lvi.ImageIndex = i;
-                lvi.Text = "  " + gameList[i].name;
+                ListViewItem lvi = new ListViewItem
+                {
+                    ImageIndex = i,
+                    Text = "  " + gameList[i].name
+                };
                 list.Items.Add(lvi);
+                icon = null;
             }
+
+            if(iconCacheUpdated)
+            {
+                this.SaveIconCache(iconCache);
+            }
+
             list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
             updateProgressBar("Done", true);
+        }
+
+        private void openSettingsButton_Click(object sender, EventArgs e)
+        {
+            SettingsForm settings = new SettingsForm();
+            settings.ShowDialog();
+        }
+
+        private Dictionary<string, Icon> LoadIconsCache()
+        {
+            string path = Path.Combine(Program.ConfigDir, "icons.bin");
+            if (File.Exists(path))
+            {
+                FileStream fs = new FileStream(path, FileMode.OpenOrCreate);
+                BinaryFormatter bf = new BinaryFormatter();
+                try
+                {
+                    return (Dictionary<string, Icon>) bf.Deserialize(fs);
+                } catch (Exception)
+                {
+                    Console.WriteLine("Icons cache corrupted, purging...");
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Steam Tunnel Bizarre Adventures Part 4: Icon Cache is Unbreakable");
+                    }
+                }
+            }
+            return new Dictionary<string, Icon>();
+        }
+
+        private void SaveIconCache(Dictionary<string, Icon> cache)
+        {
+            try
+            {
+                FileStream fs = new FileStream(Path.Combine(Program.ConfigDir, "icons.bin"), FileMode.Create);
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(fs, cache);
+                fs.Close();
+            } catch (Exception)
+            {
+                Console.WriteLine("Icons cache is unwritable.");
+            }
         }
     }
     public class GameListView : ListView
