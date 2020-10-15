@@ -59,6 +59,7 @@
             this.ClientSize = new System.Drawing.Size(299, 79);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.showIconsBox);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SettingsForm";
