@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Steam Tunnel GUI", "Steam Tunnel GUI\Steam Tunnel GUI.csproj", "{18B822ED-4B80-4672-98B6-29FD53A870ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{160A2BE0-AC18-4C3B-BD47-C12BAE8269CA} = {160A2BE0-AC18-4C3B-BD47-C12BAE8269CA}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Steam Tunnel", "Steam Tunnel\Steam Tunnel.csproj", "{160A2BE0-AC18-4C3B-BD47-C12BAE8269CA}"
 EndProject
@@ -24,5 +27,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23A26E8B-AC04-433B-A94D-A8A08C8903C2}
 	EndGlobalSection
 EndGlobal

@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using Trileans;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SteamTunnel.GUI
@@ -157,11 +156,11 @@ namespace SteamTunnel.GUI
                 listView1.games.Clear();
                 il1.Images.Clear();
 
-                trilean t = Tunnel.validateSteamDirectory(textBox1.Text);
+                string t = Tunnel.validateSteamDirectory(textBox1.Text);
 
-                if (t == true)
+                if (t != null)
                 {
-                    sourceDir = (string)t.embedded;
+                    sourceDir = t;
                     await updateList(listView1, il1, sourceDir);
                 }
                 else
@@ -200,11 +199,11 @@ namespace SteamTunnel.GUI
                 listView2.games.Clear();
                 il2.Images.Clear();
 
-                trilean t = Tunnel.validateSteamDirectory(textBox2.Text);
+                string t = Tunnel.validateSteamDirectory(textBox2.Text);
 
-                if (t == true)
+                if (t != null)
                 {
-                    destDir = (string)t.embedded;
+                    destDir = t;
                     await updateList(listView2, il2, destDir);
                 }
                 else

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
 using System.Net;
-using Trileans;
 
 namespace SteamTunnel
 {
@@ -17,7 +16,7 @@ namespace SteamTunnel
         public static int filesCopied;
         public static long totalFiles;
 
-        public static trilean validateSteamDirectory(string path)
+        public static string validateSteamDirectory(string path)
         {
             if (Path.GetFileName(path) == "Steam" &&
                     Directory.Exists(path) &&
@@ -28,7 +27,7 @@ namespace SteamTunnel
                             RegexOptions.IgnoreCase))
                     .Count() > 0)
             {
-                return new trilean(true, path + "\\SteamApps");
+                return path + "\\SteamApps";
             }
             else if (Path.GetFileName(path) == "SteamApps" &&
               Directory.Exists(path) &&
@@ -39,7 +38,7 @@ namespace SteamTunnel
                       RegexOptions.IgnoreCase))
               .Count() > 0)
             {
-                return new trilean(true, path);
+                return path;
             }
             else if (Path.GetFileName(path) == "common" &&
               Directory.Exists(path) &&
@@ -50,11 +49,11 @@ namespace SteamTunnel
                   RegexOptions.IgnoreCase))
               .Count() > 0)
             {
-                return new trilean(true, Directory.GetParent(path).FullName);
+                return Directory.GetParent(path).FullName;
             }
             else
             {
-                return new trilean(false);
+                return null;
             }
         }
 
