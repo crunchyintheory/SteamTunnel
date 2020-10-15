@@ -66,8 +66,11 @@ namespace SteamTunnel.GUI
 
             bool steamOpen = System.Diagnostics.Process.GetProcessesByName("steam").Length > 0;
 
-            SteamOpenWarningForm settings = new SteamOpenWarningForm();
-            settings.ShowDialog();
+            if(steamOpen)
+            {
+                SteamOpenWarningForm warning = new SteamOpenWarningForm();
+                warning.ShowDialog();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
