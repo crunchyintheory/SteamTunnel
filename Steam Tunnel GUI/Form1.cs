@@ -220,13 +220,15 @@ namespace SteamTunnel.GUI
                     MessageBox.Show(message, caption, buttons, icon);
                 }
             }
-            catch (Exception)
+            catch (Exception error)
             {
                 resetProgressBar(0, 0, 0, "Failed.");
                 string message = "The path could not be resolved";
                 string caption = "Error: Invalid Path";
                 MessageBoxButtons buttons = MessageBoxButtons.OK;
                 MessageBoxIcon icon = MessageBoxIcon.Error;
+
+                Console.WriteLine(error.Message);
 
                 MessageBox.Show(message, caption, buttons, icon);
             }
@@ -240,7 +242,7 @@ namespace SteamTunnel.GUI
                 resetProgressBar(0, 100, 1, "Copying Files...");
                 await Task.Run(() => game.moveGame(sourceDir, destDir));
                 resetProgressBar(0, 100, 1, "Copying Files...");
-                await Task.Run(async () => game.moveWorkshopContent(destDir, sourceDir, await game.getWorkshopInfo(sourceDir)));
+                await Task.Run(async () => game.moveWorkshopContent(sourceDir, destDir, await game.getWorkshopInfo(sourceDir)));
             }
             refresh1_Click();
             refresh2_Click();
@@ -374,21 +376,24 @@ namespace SteamTunnel.GUI
             string path = Path.Combine(Program.ConfigDir, "icons.bin");
             if (File.Exists(path))
             {
-                FileStream fs = new FileStream(path, FileMode.OpenOrCreate);
-                BinaryFormatter bf = new BinaryFormatter();
-                try
+                using(FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    return (Dictionary<string, Icon>) bf.Deserialize(fs);
-                } catch (Exception)
-                {
-                    Console.WriteLine("Icons cache corrupted, purging...");
+                    BinaryFormatter bf = new BinaryFormatter();
                     try
                     {
-                        File.Delete(path);
+                        return (Dictionary<string, Icon>)bf.Deserialize(fs);
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine("Steam Tunnel Bizarre Adventures Part 4: Icon Cache is Unbreakable");
+                        Console.WriteLine("Icons cache corrupted, purging...");
+                        try
+                        {
+                            File.Delete(path);
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine("Steam Tunnel Bizarre Adventures Part 4: Icon Cache is Unbreakable");
+                        }
                     }
                 }
             }
@@ -399,10 +404,11 @@ namespace SteamTunnel.GUI
         {
             try
             {
-                FileStream fs = new FileStream(Path.Combine(Program.ConfigDir, "icons.bin"), FileMode.Create);
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(fs, cache);
-                fs.Close();
+                using(FileStream fs = new FileStream(Path.Combine(Program.ConfigDir, "icons.bin"), FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    BinaryFormatter bf = new BinaryFormatter();
+                    bf.Serialize(fs, cache);
+                }
             } catch (Exception)
             {
                 Console.WriteLine("Icons cache is unwritable.");

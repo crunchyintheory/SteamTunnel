@@ -14,7 +14,7 @@ namespace SteamTunnel.GUI
         public static Dictionary<string, string> Options = new Dictionary<string, string>();
         public static string ConfigDir;
 
-        public static string Version = "1.4.0b1";
+        public static string Version = "1.4.0b4";
 
         public static void LoadSettings()
         {
