@@ -301,9 +301,12 @@ namespace SteamTunnel.GUI
         {
             string[] fileArray = Directory.GetFiles(dir).Where(x => Regex.IsMatch(Path.GetFileName(x), @"appmanifest_\d+\.acf")).ToArray();
             List<Game> gameList = new List<Game>(fileArray.Length);
+            Game g;
             foreach(string file in fileArray)
             {
-                gameList.Add(Tunnel.getGameInfo(file));
+                g = Tunnel.getGameInfo(file);
+                if (g.appId == null) continue;
+                gameList.Add(g);
             }
             /*for (int i = 0; i < fileArray.Length; i++)
             {
@@ -319,50 +322,56 @@ namespace SteamTunnel.GUI
             }*/
             gameList.Sort((x, y) => string.Compare(x.name, y.name));
             list.games = gameList;
-
-            Dictionary<string, Icon> iconCache = LoadIconsCache();
-            bool iconCacheUpdated = false;
-            Icon icon;
             _ = Program.Options.TryGetValue("Icons", out string useIcons);
+
+            if (useIcons != "0")
+            {
+                genIconList(gameList, imageList, dir, list);
+            }
 
             for (int i = 0; i < gameList.Count; i++)
             {
-                if (useIcons != "0")
-                {
-                    if(!iconCache.TryGetValue(gameList[i].appId, out icon))
-                    {
-                        icon = await Task.Run(() => gameList[i].icon(dir + "\\common"));
-                        if (icon == null)
-                        {
-                            icon = SystemIcons.Application;
-                        }
-                        else
-                        {
-                            iconCache.Add(gameList[i].appId, icon);
-                            iconCacheUpdated = true;
-                        }
-                    }
-                } else
-                {
-                    icon = SystemIcons.Application;
-                }
-                imageList.Images.Add(gameList[i].appId, icon);
                 ListViewItem lvi = new ListViewItem
                 {
                     ImageIndex = i,
                     Text = "  " + gameList[i].name
                 };
                 list.Items.Add(lvi);
-                icon = null;
-            }
-
-            if(iconCacheUpdated)
-            {
-                this.SaveIconCache(iconCache);
             }
 
             list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
             updateProgressBar("Done", true);
+        }
+
+        public async Task genIconList(List<Game> gameList, ImageList imageList, string dir, GameListView list)
+        {
+            Icon icon;
+            Dictionary<string, Icon> iconCache = LoadIconsCache();
+            bool iconCacheUpdated = false;
+            for (int i = 0; i < gameList.Count; i++)
+            {
+                if (!iconCache.TryGetValue(gameList[i].appId, out icon))
+                {
+                    icon = await Task.Run(() => gameList[i].icon(dir + "\\common"));
+                    if (icon == null)
+                    {
+                        icon = SystemIcons.Application;
+                    }
+                    else
+                    {
+                        iconCache.Add(gameList[i].appId, icon);
+                        iconCacheUpdated = true;
+                    }
+                }
+                imageList.Images.Add(gameList[i].appId, icon);
+                icon = SystemIcons.Application;
+                list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
+            }
+
+            if (iconCacheUpdated)
+            {
+                SaveIconCache(iconCache);
+            }
         }
 
         private void openSettingsButton_Click(object sender, EventArgs e)
