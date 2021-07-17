@@ -365,7 +365,7 @@ namespace SteamTunnel.GUI
                 }
                 imageList.Images.Add(gameList[i].appId, icon);
                 icon = SystemIcons.Application;
-                list.Columns[0].AutoResize(ColumnHeaderAutoResizeStyle.None);
+                list.RedrawItems(i, i, false);
             }
 
             if (iconCacheUpdated)
